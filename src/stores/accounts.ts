@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 
 export interface Account {
@@ -11,7 +11,20 @@ export interface Account {
 
 export const useAccountStore = defineStore('accounts', () => {
   const accounts = ref<Account[]>([])
-  //TODO: добавить работу с localstor
+  const saveToStorage = () => {
+    localStorage.setItem('accounts', JSON.stringify(accounts.value))
+  }
+
+  const loadFromStorage = () => {
+    const stored = localStorage.getItem('accounts')
+    if (stored) {
+      accounts.value = JSON.parse(stored)
+    }
+  }
+
+  watch(accounts, saveToStorage, { deep: true })
+
+  loadFromStorage()
 
   const addAccount = () => {
     const newAccount: Account = {
@@ -24,7 +37,7 @@ export const useAccountStore = defineStore('accounts', () => {
     accounts.value.push(newAccount)
   }
   const removeAccount = (id: string) => {
-    accounts.value = accounts.value.filter((account) => account.id !== id)
+    accounts.value = accounts.value.filter((item) => item.id !== id)
   }
 
   const updateAccount = (updatedAccount: Account) => {

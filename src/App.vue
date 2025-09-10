@@ -2,9 +2,7 @@
   <div class="app-container">
     <div class="header">
       <h1>Учетные записи</h1>
-      <el-button type="primary" @click="addAccount" icon="Plus">
-        Добавить
-      </el-button>
+      <el-button type="primary" @click="addAccount" icon="Plus"> Добавить </el-button>
     </div>
 
     <div class="hint">
@@ -13,7 +11,7 @@
       </el-text>
     </div>
 
-     <el-table :data="accounts" class="accounts-table">
+    <el-table :data="accounts" class="accounts-table">
       <el-table-column label="Метки" width="200">
         <template #default="{ row }">
           <el-input
@@ -27,11 +25,7 @@
 
       <el-table-column label="Тип записи" width="150">
         <template #default="{ row }">
-          <el-select
-            v-model="row.type"
-            @change="updateAccount(row)"
-            placeholder="Выберите тип"
-          >
+          <el-select v-model="row.type" @change="updateAccount(row)" placeholder="Выберите тип">
             <el-option label="LDAP" value="LDAP" />
             <el-option label="Локальная" value="Локальная" />
           </el-select>
@@ -63,14 +57,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column  width="100">
-        <template #default="{ $index }">
-          <el-button
-            type="danger"
-            @click="removeAccount($index)"
-            icon="Delete"
-            text
-          />
+      <el-table-column width="100">
+        <template #default="{ row }">
+          <el-button type="danger" @click="removeAccount(row.id)" icon="Delete" text />
         </template>
       </el-table-column>
     </el-table>
@@ -85,8 +74,8 @@ const store = useAccountStore()
 const addAccount = () => {
   store.addAccount()
 }
-const removeAccount = (index: string) => {
-  store.removeAccount(index)
+const removeAccount = (id: string) => {
+  store.removeAccount(id)
 }
 
 const updateAccount = (account: Account) => {
@@ -113,5 +102,9 @@ const accounts = computed(() => store.accounts)
   padding: 10px;
   background-color: #f5f7fa;
   border-radius: 4px;
+}
+
+.accounts-table {
+  margin-top: 20px;
 }
 </style>
