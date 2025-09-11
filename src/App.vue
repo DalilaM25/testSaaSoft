@@ -11,13 +11,13 @@
       </el-text>
     </div>
 
-   <div class="accounts-container">
-    <div class="columns-header">
-        <div class="header-cell" style="flex: 2;">Метки</div>
-        <div class="header-cell" style="flex: 1;">Тип записи</div>
-        <div class="header-cell" style="flex: 1;">Логин</div>
-        <div class="header-cell" style="flex: 1;">Пароль</div>
-        <div class="header-cell" style="flex: 0 0 60px;"></div>
+    <div class="accounts-container">
+      <div class="columns-header">
+        <div class="header-cell" style="flex: 2">Метки</div>
+        <div class="header-cell" style="flex: 1">Тип записи</div>
+        <div class="header-cell" style="flex: 1">Логин</div>
+        <div class="header-cell" style="flex: 1">Пароль</div>
+        <div class="header-cell" style="flex: 0 0 60px"></div>
       </div>
       <form
         v-for="account in accounts"
@@ -27,7 +27,6 @@
         @submit.prevent="handleSubmit(account)"
       >
         <div class="form-row">
-
           <div class="form-cell">
             <el-input
               v-model="account.label"
@@ -72,13 +71,25 @@
             <el-input
               v-if="account.type === 'Локальная'"
               v-model="account.password"
-              type="password"
+              :type="passwordVisible[account.id] ? 'text' : 'password'"
               placeholder="Введите пароль"
               :maxlength="100"
               @blur="updateAccount(account)"
               :class="{ 'is-error': account.errors?.password }"
               :form="`account-form-${account.id}`"
-            />
+            >
+              <template #suffix>
+                <el-icon
+                  v-if="account.type === 'Локальная'"
+                  class="password-eye"
+                  @click="togglePasswordVisibility(account.id)"
+                  :style="{ cursor: 'pointer' }"
+                >
+                  <View v-if="passwordVisible[account.id]" />
+                  <Hide v-else />
+                </el-icon>
+              </template>
+            </el-input>
             <span v-else>-</span>
             <div v-if="account.errors?.password" class="error-message">
               {{ account.errors.password }}
@@ -86,32 +97,33 @@
           </div>
 
           <div class="form-cell">
-            <el-button
-              type="danger"
-              @click="removeAccount(account.id)"
-              icon="Delete"
-              text
-            />
+            <el-button type="danger" @click="removeAccount(account.id)" icon="Delete" text />
           </div>
         </div>
       </form>
 
-       <div v-if="accounts.length === 0" class="empty-state">
+      <div v-if="accounts.length === 0" class="empty-state">
         <p>Нет учетных записей</p>
         <el-button type="primary" @click="addAccount" icon="Plus">
           Добавить первую запись
         </el-button>
       </div>
-      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAccountStore, type Account } from './stores/accounts'
 const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
 
 const handleSubmit = (account: Account) => {
   updateAccount(account)
+}
+
+const passwordVisible = ref<{ [key: string]: boolean }>({})
+const togglePasswordVisibility = (accountId: string) => {
+  passwordVisible.value[accountId] = !passwordVisible.value[accountId]
 }
 </script>
 
@@ -176,8 +188,12 @@ const handleSubmit = (account: Account) => {
   min-width: 0;
 }
 
-.form-cell:first-child { flex: 2; }
-.form-cell:last-child { flex: 0 0 60px; }
+.form-cell:first-child {
+  flex: 2;
+}
+.form-cell:last-child {
+  flex: 0 0 60px;
+}
 
 .empty-state {
   padding: 40px 0;
@@ -199,5 +215,14 @@ const handleSubmit = (account: Account) => {
 
 .account-form:hover {
   background-color: #fafafa;
+}
+
+.password-eye {
+  color: #909399;
+  transition: color 0.2s;
+}
+
+.password-eye:hover {
+  color: #409eff;
 }
 </style>
