@@ -47,13 +47,10 @@ Vue.js приложение для управления учетными зап�
 ## 📁 Структура проекта
 ```
 src/
-├── components/ # Vue компоненты
 ├── stores/
 │ └── accounts.ts # Pinia store для учетных записей
 ├── utils/
 │ └── validation.ts # Валидация данных
-├── types/
-│ └── index.ts # TypeScript типы
 └── App.vue # Основной компонент
 ```
 
