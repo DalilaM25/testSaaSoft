@@ -11,7 +11,7 @@
       </el-text>
     </div>
 
-    <el-table :data="accounts" class="accounts-table"  >
+    <el-table :data="accounts" class="accounts-table">
       <el-table-column label="Метки" width="200">
         <template #default="{ row }">
           <el-input
@@ -19,9 +19,9 @@
             placeholder="метка1; метка2"
             :maxlength="50"
             @blur="updateAccount(row)"
-             :class="{ 'is-error': row.errors?.label }"
+            :class="{ 'is-error': row.errors?.label }"
           />
-           <div v-if="row.errors?.label" class="error-message">
+          <div v-if="row.errors?.label" class="error-message">
             {{ row.errors.label }}
           </div>
         </template>
@@ -75,15 +75,14 @@
         </template>
       </el-table-column>
 
-  <template #empty>
-    <div class="empty-state">
-      <p>Нет учетных записей</p>
-      <el-button type="primary" @click="addAccount" icon="Plus">
-        Добавить первую запись
-      </el-button>
-    </div>
-  </template>
-
+      <template #empty>
+        <div class="empty-state">
+          <p>Нет учетных записей</p>
+          <el-button type="primary" @click="addAccount" icon="Plus">
+            Добавить первую запись
+          </el-button>
+        </div>
+      </template>
     </el-table>
   </div>
 </template>
@@ -91,7 +90,6 @@
 <script setup lang="ts">
 import { useAccountStore } from './stores/accounts'
 const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
-
 </script>
 
 <style scoped>
@@ -126,7 +124,8 @@ const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
 
 .empty-state p {
   margin-bottom: 20px;
-  font-size: 14px;}
+  font-size: 14px;
+}
 
 .error-message {
   color: #f56c6c;

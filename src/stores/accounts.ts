@@ -5,6 +5,7 @@ import { validateAccount } from '../utils/validate'
 export interface Account {
   id: string
   label: string
+  labelArray: { text: string }[]
   type: 'LDAP' | 'Локальная'
   login: string
   password: string
@@ -14,13 +15,14 @@ export interface Account {
     password?: string
   }
 }
-// исправить хранение метки на массив объектов
+
 export const useAccountStore = defineStore('accounts', () => {
   const accounts = ref<Account[]>([])
   const saveToStorage = () => {
     const dataToSave = accounts.value.map((account) => ({
       id: account.id,
       label: account.label,
+      labelArray: account.labelArray,
       type: account.type,
       login: account.login,
       password: account.password,
@@ -32,10 +34,19 @@ export const useAccountStore = defineStore('accounts', () => {
     const stored = localStorage.getItem('accounts')
     if (stored) {
       const parsed = JSON.parse(stored)
-      accounts.value = parsed.map((account: Account) => ({
-        ...account,
-        errors: {},
-      }))
+      accounts.value = parsed.map((account: Account) => {
+        const labelArray = account.labelArray || []
+        const label =
+          labelArray.length > 0
+            ? labelArray.map((item: { text: string }) => item.text).join('; ')
+            : account.label || ''
+        return {
+          ...account,
+          label,
+          labelArray,
+          errors: {},
+        }
+      })
     }
   }
 
@@ -46,6 +57,7 @@ export const useAccountStore = defineStore('accounts', () => {
     const newAccount: Account = {
       id: Date.now().toString(),
       label: '',
+      labelArray: [],
       type: 'Локальная',
       login: '',
       password: '',
@@ -77,7 +89,7 @@ export const useAccountStore = defineStore('accounts', () => {
         const labelsArray = parseLabels(updatedAccount.label)
         accounts.value[index] = {
           ...updatedAccount,
-          label: labelsArray.map((item) => item.text).join(';'),
+          labelArray: labelsArray,
         }
       } else {
         accounts.value[index] = {
