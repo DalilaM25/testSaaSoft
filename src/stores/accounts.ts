@@ -1,30 +1,46 @@
 import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
+import { validateAccount } from '../utils/validate'
 
 export interface Account {
   id: string
-  label: string | null
+  label: string
   type: 'LDAP' | 'Локальная'
   login: string
   password: string
+  errors?: {
+    label?: string
+    login?: string
+    password?: string
+  }
 }
-
+// исправить хранение метки на массив объектов
 export const useAccountStore = defineStore('accounts', () => {
   const accounts = ref<Account[]>([])
   const saveToStorage = () => {
-    localStorage.setItem('accounts', JSON.stringify(accounts.value))
+    const dataToSave = accounts.value.map((account) => ({
+      id: account.id,
+      label: account.label,
+      type: account.type,
+      login: account.login,
+      password: account.password,
+    }))
+    localStorage.setItem('accounts', JSON.stringify(dataToSave))
   }
 
   const loadFromStorage = () => {
     const stored = localStorage.getItem('accounts')
     if (stored) {
-      accounts.value = JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+      accounts.value = parsed.map((account: Account) => ({
+        ...account,
+        errors: {},
+      }))
     }
   }
 
-  watch(accounts, saveToStorage, { deep: true })
-
   loadFromStorage()
+  watch(accounts, saveToStorage, { deep: true })
 
   const addAccount = () => {
     const newAccount: Account = {
@@ -37,19 +53,46 @@ export const useAccountStore = defineStore('accounts', () => {
     accounts.value.push(newAccount)
   }
   const removeAccount = (id: string) => {
-    accounts.value = accounts.value.filter((item) => item.id !== id)
+    const index = accounts.value.findIndex((item) => item.id === id)
+    if (index !== -1) {
+      accounts.value.splice(index, 1)
+    }
+  }
+
+  const parseLabels = (labelString: string) => {
+    if (!labelString.trim()) return []
+
+    return labelString
+      .split(';')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0)
+      .map((text) => ({ text }))
   }
 
   const updateAccount = (updatedAccount: Account) => {
     const index = accounts.value.findIndex((account) => account.id === updatedAccount.id)
     if (index !== -1) {
-      accounts.value[index] = { ...updatedAccount }
+      const isValid = validateAccount(accounts, updatedAccount)
+      if (isValid) {
+        const labelsArray = parseLabels(updatedAccount.label)
+        accounts.value[index] = {
+          ...updatedAccount,
+          label: labelsArray.map((item) => item.text).join(';'),
+        }
+      } else {
+        accounts.value[index] = {
+          ...updatedAccount,
+          errors: accounts.value[index].errors,
+        }
+      }
     }
   }
+
   return {
     accounts,
     addAccount,
     removeAccount,
     updateAccount,
+    validateAccount,
   }
 })
