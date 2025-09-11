@@ -18,7 +18,8 @@ export const validateAccount = (accounts: Ref<Account[]>, account: Account): boo
     errors.login = ERROR_MESSAGES.LOGIN_MAX_LENGTH
   }
 
-  if (account.label.length > 50) {
+  const labelString = account.labelArray.map((item) => item.text).join('; ')
+  if (labelString.length > 50) {
     errors.label = ERROR_MESSAGES.LABEL_MAX_LENGTH
   }
 

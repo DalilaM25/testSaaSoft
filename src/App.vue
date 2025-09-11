@@ -11,85 +11,108 @@
       </el-text>
     </div>
 
-    <el-table :data="accounts" class="accounts-table">
-      <el-table-column label="Метки" width="200">
-        <template #default="{ row }">
-          <el-input
-            v-model="row.label"
-            placeholder="метка1; метка2"
-            :maxlength="50"
-            @blur="updateAccount(row)"
-            :class="{ 'is-error': row.errors?.label }"
-          />
-          <div v-if="row.errors?.label" class="error-message">
-            {{ row.errors.label }}
+   <div class="accounts-container">
+    <div class="columns-header">
+        <div class="header-cell" style="flex: 2;">Метки</div>
+        <div class="header-cell" style="flex: 1;">Тип записи</div>
+        <div class="header-cell" style="flex: 1;">Логин</div>
+        <div class="header-cell" style="flex: 1;">Пароль</div>
+        <div class="header-cell" style="flex: 0 0 60px;"></div>
+      </div>
+      <form
+        v-for="account in accounts"
+        :key="account.id"
+        :id="`account-form-${account.id}`"
+        class="account-form"
+        @submit.prevent="handleSubmit(account)"
+      >
+        <div class="form-row">
+
+          <div class="form-cell">
+            <el-input
+              v-model="account.label"
+              placeholder="метка1; метка2"
+              :maxlength="50"
+              @blur="updateAccount(account)"
+              :class="{ 'is-error': account.errors?.label }"
+              :form="`account-form-${account.id}`"
+            />
+            <div v-if="account.errors?.label" class="error-message">
+              {{ account.errors.label }}
+            </div>
           </div>
-        </template>
-      </el-table-column>
 
-      <el-table-column label="Тип записи" width="150">
-        <template #default="{ row }">
-          <el-select v-model="row.type" @change="updateAccount(row)" placeholder="Выберите тип">
-            <el-option label="LDAP" value="LDAP" />
-            <el-option label="Локальная" value="Локальная" />
-          </el-select>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="Логин" width="200">
-        <template #default="{ row }">
-          <el-input
-            v-model="row.login"
-            placeholder="Введите логин"
-            :maxlength="100"
-            @blur="updateAccount(row)"
-            :class="{ 'is-error': row.errors?.login }"
-          />
-          <div v-if="row.errors?.login" class="error-message">
-            {{ row.errors.login }}
+          <div class="form-cell">
+            <el-select
+              v-model="account.type"
+              @change="updateAccount(account)"
+              placeholder="Выберите тип"
+              :form="`account-form-${account.id}`"
+            >
+              <el-option label="LDAP" value="LDAP" />
+              <el-option label="Локальная" value="Локальная" />
+            </el-select>
           </div>
-        </template>
-      </el-table-column>
 
-      <el-table-column label="Пароль" width="200">
-        <template #default="{ row }">
-          <el-input
-            v-if="row.type === 'Локальная'"
-            v-model="row.password"
-            type="password"
-            placeholder="Введите пароль"
-            :maxlength="100"
-            @blur="updateAccount(row)"
-            :class="{ 'is-error': row.errors?.password }"
-          />
-          <span v-else>-</span>
-          <div v-if="row.errors?.password" class="error-message">
-            {{ row.errors.password }}
+          <div class="form-cell">
+            <el-input
+              v-model="account.login"
+              placeholder="Введите логин"
+              :maxlength="100"
+              @blur="updateAccount(account)"
+              :class="{ 'is-error': account.errors?.login }"
+              :form="`account-form-${account.id}`"
+            />
+            <div v-if="account.errors?.login" class="error-message">
+              {{ account.errors.login }}
+            </div>
           </div>
-        </template>
-      </el-table-column>
 
-      <el-table-column width="100">
-        <template #default="{ row }">
-          <el-button type="danger" @click="removeAccount(row.id)" icon="Delete" text />
-        </template>
-      </el-table-column>
+          <div class="form-cell">
+            <el-input
+              v-if="account.type === 'Локальная'"
+              v-model="account.password"
+              type="password"
+              placeholder="Введите пароль"
+              :maxlength="100"
+              @blur="updateAccount(account)"
+              :class="{ 'is-error': account.errors?.password }"
+              :form="`account-form-${account.id}`"
+            />
+            <span v-else>-</span>
+            <div v-if="account.errors?.password" class="error-message">
+              {{ account.errors.password }}
+            </div>
+          </div>
 
-      <template #empty>
-        <div class="empty-state">
-          <p>Нет учетных записей</p>
-          <el-button type="primary" @click="addAccount" icon="Plus">
-            Добавить первую запись
-          </el-button>
+          <div class="form-cell">
+            <el-button
+              type="danger"
+              @click="removeAccount(account.id)"
+              icon="Delete"
+              text
+            />
+          </div>
         </div>
-      </template>
-    </el-table>
+      </form>
+
+       <div v-if="accounts.length === 0" class="empty-state">
+        <p>Нет учетных записей</p>
+        <el-button type="primary" @click="addAccount" icon="Plus">
+          Добавить первую запись
+        </el-button>
+      </div>
+      </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAccountStore } from './stores/accounts'
+import { useAccountStore, type Account } from './stores/accounts'
 const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
+
+const handleSubmit = (account: Account) => {
+  updateAccount(account)
+}
 </script>
 
 <style scoped>
@@ -112,9 +135,49 @@ const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
   border-radius: 4px;
 }
 
-.accounts-table {
+.accounts-container {
   margin-top: 20px;
 }
+
+.columns-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background-color: #f5f7fa;
+  border: 1px solid #ebeef5;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  font-weight: 600;
+  color: #606266;
+}
+
+.header-cell {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.account-form {
+  padding: 16px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.form-cell {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-cell:first-child { flex: 2; }
+.form-cell:last-child { flex: 0 0 60px; }
 
 .empty-state {
   padding: 40px 0;
@@ -134,15 +197,7 @@ const { accounts, addAccount, removeAccount, updateAccount } = useAccountStore()
   height: 18px;
 }
 
-:deep(.el-table td) {
-  vertical-align: top;
-  padding-bottom: 8px;
-}
-
-:deep(.el-table .cell) {
-  min-height: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.account-form:hover {
+  background-color: #fafafa;
 }
 </style>
